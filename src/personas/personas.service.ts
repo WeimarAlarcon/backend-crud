@@ -59,17 +59,6 @@ export class PersonasService {
   }
 
   async update(id: number, updatePersonaDto: UpdatePersonaDto) {
-    // Verificar si el carnet de identidad ya existe para otra persona
-    // const ciExist = await this.personaRepository.findOne({
-    //   where: {
-    //     carnetIdentidad: updatePersonaDto.carnetIdentidad,
-    //     id: Not(id),
-    //   },
-    // });
-    // if (ciExist) {
-    //   throw new BadRequestException('El ci de persona ya existe');
-    // }
-
     // Buscar la persona específica por ID
     const persona = await this.personaRepository.findOne({
       where: { id },
