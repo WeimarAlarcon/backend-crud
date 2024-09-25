@@ -1,17 +1,27 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Persona } from './entities/persona.entity';
 import { Not, Repository } from 'typeorm';
+import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
 export class PersonasService {
 
   constructor (
+    @Inject('KAFKA_SERVICE')
+    private readonly kafkaClient: ClientKafka,
+
     @InjectRepository(Persona)
     private personaRepository: Repository<Persona>,
   ) {}
+
+  async onModuleInit() {
+    this.kafkaClient.subscribeToResponseOf('persona.nueva.registrada');
+    await this.kafkaClient.connect();  // Conectar Kafka
+  }
+
   async create(createPersonaDto: CreatePersonaDto) {
     const ciExiste = await this.personaRepository.findOne({
       where: {
@@ -24,11 +34,22 @@ export class PersonasService {
     try {
       const persona = await this.personaRepository.create({
         ...createPersonaDto,
-        // fechaNacimiento: new Date(createPersonaDto.fechaNacimiento),
         estado: true,
       });
-      await this.personaRepository.save(persona);
-      return persona;
+      const nuevapersona = await this.personaRepository.save(persona);
+      await this.kafkaClient.emit('persona.nueva.registrada', JSON.stringify(nuevapersona));
+      // Enviar mensaje a Kafka y suscribirse al Observable
+      // this.kafkaClient.send('persona.nueva.registrada', nuevapersona).subscribe({
+      //   next: (result) => {
+      //     console.log('Mensaje enviado correctamente:', result);
+      //   },
+      //   error: (err) => {
+      //     console.error('Error al enviar mensaje a Kafka:', err);
+      //   },
+      // });
+
+      // console.log('envio', envio);
+      return nuevapersona;
     } catch (error) {
       throw new BadRequestException('Error al crear el persona');
     }

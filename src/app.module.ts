@@ -5,9 +5,25 @@ import { PersonasModule } from './personas/personas.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { NotificacionModule } from './notificacion/notificacion.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
+    // ClientsModule.register([
+    //   {
+    //     name: 'KAFKA_SERVICE',
+    //     transport: Transport.KAFKA,
+    //     options: {
+    //       client: {
+    //         brokers: ['localhost:9092'], // Kafka corriendo en tu Docker,
+    //       },
+    //       consumer: {
+    //         groupId: 'notificaciones-registro', // Nombre del grupo de consumidores
+    //       },
+    //     },
+    //   },
+    // ]),
      // Cargar las variables de entorno globalmente
      ConfigModule.forRoot({
       isGlobal: true,
@@ -26,7 +42,8 @@ import { NotificacionModule } from './notificacion/notificacion.module';
       synchronize: process.env.SYNCHRONIZE as any,
     }),
     PersonasModule,
-    NotificacionModule
+    NotificacionModule,
+    KafkaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

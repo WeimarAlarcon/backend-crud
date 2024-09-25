@@ -1,16 +1,13 @@
 import { Module } from '@nestjs/common';
-import { PersonasService } from './personas.service';
-import { PersonasController } from './personas.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Persona } from './entities/persona.entity';
-import { KafkaModule } from 'src/kafka/kafka.module';
+import { KafkaService } from './kafka.service';
+import { KafkaController } from './kafka.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { NotificacionModule } from 'src/notificacion/notificacion.module';
-import { PersonaGateway } from './persona.gateway';
+import { KafkaGateway } from './kafka.gateway';
 
 @Module({
-  controllers: [PersonasController],
-  providers: [PersonasService, PersonaGateway],
+  controllers: [KafkaController],
+  providers: [KafkaService, KafkaGateway],
   imports: [
     ClientsModule.register([
       {
@@ -26,9 +23,8 @@ import { PersonaGateway } from './persona.gateway';
         },
       },
     ]),
-    TypeOrmModule.forFeature([Persona]),
-    KafkaModule, 
-    NotificacionModule, // Inyección del Gateway
+    NotificacionModule
   ],
+  exports: [KafkaService, KafkaGateway]
 })
-export class PersonasModule {}
+export class KafkaModule {}

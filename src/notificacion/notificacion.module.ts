@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { NotificacionService } from './notificacion.service';
-import { NotificacionController } from './notificacion.controller';
 import { NotificacionGateway } from './notificacion.gateway';
-import { PublicadorService } from './publicador.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
-  controllers: [NotificacionController],
-  providers: [NotificacionService, NotificacionGateway, PublicadorService],
+  controllers: [],
+  providers: [NotificacionService, NotificacionGateway],
+  imports: [],
+  exports: [NotificacionService, NotificacionGateway],
 })
 export class NotificacionModule {}

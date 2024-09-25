@@ -9,21 +9,20 @@ async function bootstrap() {
   app.setGlobalPrefix('api'); 
   app.enableCors();
 
-  // configurar microservicio con RabbitMQ
-
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
+    transport: Transport.KAFKA,
     options: {
-      urls: ['amqp://guest:guest@localhost:5672'], // URL de tu servidor RabbitMQ
-      queue: 'notificaciones', // Nombre de la cola
-      queueOptions: {
-        durable: false // Configuración de durabilidad
+      client: {
+        brokers: ['localhost:9092'], // URL de tu servidor Kafka
       },
-    },
+      consumer: {
+        groupId: 'notificaciones-registro', // Nombre del grupo de consumidores
+      },
+    }
   })
 
   await app.startAllMicroservices(); // Iniciar microservicios
 
-  await app.listen(process.env.APP_PORT); // Iniciar el servidor HTTP
+  await app.listen(process.env.APP_PORT);
 }
 bootstrap();

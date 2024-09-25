@@ -1,13 +1,25 @@
-import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: { origin: '*' } })
 export class NotificacionGateway {
-    @WebSocketServer()
-    server: Server;
 
-    // Método para enviar notificaciones push a todos los clientes conectados
-    enviarNotificacion(mensaje: string) {
-        this.server.emit('notificacion', mensaje); // Emitir un evento a todos los clientes conectados
-    }
+  @WebSocketServer()
+  server: Server;
+  
+  // escucha mensaje del cliente
+  @SubscribeMessage('sendMessage')
+  handleMessage(@MessageBody() mensaje: string): void {
+    this.enviarNotificacion(mensaje); // Emitir la notificación usando el método del Gateway
+  }
+
+  enviarNotificacion(mensaje: string): void {
+    console.log('mensaje recibido y reenviar por websocket', mensaje);
+    this.server.emit('notificacion', mensaje); // Emitir el mensaje a todos los clientes conectados
+  }
+
+  enviarNotificacionPersona(persona: any): void {
+    // Emitir la nueva persona a todos los clientes conectados
+    this.server.emit('nuevaPersona', persona);
+  }
 }
